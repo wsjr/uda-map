@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0">
+
+    <title>Map Bart Stations</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Fontawesome -->
+    <link rel=stylesheet type=text/css href="css/font-awesome-4.6.3/css/font-awesome.min.css">
+
+
+    <!-- JQuery -->
+    <script src="js/jquery/jquery.min.js"></script>
+    <!-- Twitter Bootstrap -->
+    <link rel=stylesheet type=text/css href="css/bootstrap/bootstrap.min.css">
+    <script src="js/bootstrap/bootstrap.min.js"></script>
+
+    <!-- Knockout -->
+    <script src="js/knockout/knockout-3.4.0.js"></script>
+
+
+    <script src="js/script.js"></script>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <!-- Bart Key: ZI4M-5RS8-9TDT-DWE9 -->
+    <!-- To get list of bart stations : http://api.bart.gov/api/stn.aspx?cmd=stns&key=ZI4M-5RS8-9TDT-DWE9 -->
+    <!-- Example: http://api.bart.gov/api/stn.aspx?cmd=stns&key=MW9S-E7SL-26DU-VV8V -->
+    <!-- Google Map Key: AIzaSyDZ-sY-4sRllJs6AF_467soV1gpGztKs6U -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDZ-sY-4sRllJs6AF_467soV1gpGztKs6U&callback=initMap"
+    async defer>
+    </script>
+    <script type="text/javascript">
+        var map;
+        var markers = [];
+
+        function markStation(oStation) {
+            return function () {
+                clearMarkers();
+                dropMarker(oStation)
+                //window.alert("Mark station:" + oStation.name + " (" + oStation.lat + "," + oStation.long + ")")
+            };
+        };
+
+        function listStations() {
+            var bartURL = "http://api.bart.gov/api/stn.aspx?cmd=stns&key=MW9S-E7SL-26DU-VV8V";
+            $.ajax({
+                url: bartURL,
+                dataType: "xml",
+                success: function (response) {
+                    var station = $(response).find("station");
+
+                    $("#station-list").empty();
+                    markers = [];
+
+                    $(station).each(function () {
+                        var oStation = {};
+                        oStation.name = $(this).find("name").text();
+                        oStation.lat = $(this).find("gtfs_latitude").text();
+                        oStation.long = $(this).find("gtfs_longitude").text();
+                        oStation.address = $(this).find("address").text();
+                        oStation.city = $(this).find("city").text();
+                        oStation.county = $(this).find("county").text(); 
+                        oStation.state = $(this).find("state").text(); 
+                        oStation.zip = $(this).find("zipcode").text();
+
+                        var _callback = markStation(oStation);
+
+                        $item = $("<span>")
+                        $item.append(oStation.name + "<br>")
+
+                        $item.on("click", _callback)
+
+                        $item = $("#station-list").append($item);
+
+                        // Create marker
+                        oPosition = {lat: parseFloat(oStation.lat), lng: parseFloat(oStation.long)};
+                        var marker = new google.maps.Marker({
+                            position: oPosition,
+                            animation: google.maps.Animation.DROP,
+                            title: oStation.name
+                        });
+
+                        // Create pop-up window
+                        sContentString = "<h4>" + oStation.name + " Station</h4>";
+                        sContentString += oStation.address + "<BR>";
+                        sContentString += oStation.city + ", " + oStation.state + " " + oStation.zip;
+
+                        var oInfowindow = new google.maps.InfoWindow({
+                            content: sContentString
+                        });
+
+                        // Attach listener to marker
+                        marker.addListener('click', function() {
+                          oInfowindow.open(map, marker);
+                        });
+
+
+                        markers.push(marker)
+
+
+
+                        
+                    });
+                },
+                complete: function() {
+                    dropMarkers();
+                },
+                error: function(xhr, status, error) {
+                    window.alert(xhr.status)
+                }
+            });
+        };
+
+
+        var markerCallback = function (marker) {
+            return function () {
+                marker.setMap(map);
+            }
+        };
+
+        function clearMarkers() {
+            for (var i =0; i < markers.length; i++) {
+                var marker = markers[i];
+                marker.setMap(null);
+            }
+        };
+
+        function dropMarker(oStation) {
+            for (var i =0; i < markers.length; i++) {
+                if (markers[i].title === oStation.name) {
+                    markerCallback(markers[i])();
+                }
+            }
+        };
+
+        function dropMarkers() {
+            for (var i =0; i < markers.length; i++) {
+                setTimeout(markerCallback(markers[i]), i * 75);
+            }
+        };
+
+
+        function initMap() {
+            var center = {lat: 37.792295, lng: -122.052747};
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: center,
+                zoom: 10
+            });
+
+            listStations()
+        };
+
+    </script>
+</head>
+<body>
+    <div class="row">
+        <div class="col-xs-4 left-panel">
+            <div class="row">
+                <div class="col-md-12 text-center left-title-row">
+                    <span class="left-title">Bart Locations</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <form id="form-container" class="form-container">
+                        <table>
+                            <tr>
+                                <td>
+                                    <input type="text" id="form-input" class="location-box" placeholder="Station location" size="25">
+                                </td>
+                                <td>
+                                    <a class="btn btn-primary btn-sm btn-min-corners" href="#navigation-main" aria-label="Skip to main navigation">
+                                        <i class="fa fa-filter" aria-hidden="true">&nbsp;Filter</i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div id="station-list"></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-8">
+             <div class="row right-nav-row ">
+                <div class="col-md-12 right-nav">
+                    <a class="btn btn-primary btn-sm right-nav-button" href="#" aria-label="Toggle left panel">
+                      <i class="fa fa-bars" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 right-map-container">
+                    <div id="map">
+                        Map goes here
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

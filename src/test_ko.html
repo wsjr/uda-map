@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Knockout -->
+    <script src="js/knockout/knockout-3.4.0.js"></script>
+
+</head>
+<body>
+
+	<div class='liveExample'>   
+	    <p><input data-bind='value: searchTerm'/><button data-bind='click: clickListener'>Filter</button>
+	    </p>
+
+	    <div data-bind="foreach: items">
+	    	<span data-bind="click: clickHandler, text: name">
+	    	</span>
+	    	<button data-bind='click: markAsFavorite'>
+	    	<span data-bind="style: {color: isFavorite() ? 'yellow' : 'black'}">Mark as Favorite</span>
+	    	</button>
+	    	<br>
+	    </div>
+	    
+	</div>
+
+    <script type="text/javascript">
+
+    	function ItemViewModel (oItem) {
+    		var self = this;
+    		self.isFavorite = ko.observable(false);
+
+    		self.name = oItem.name;
+    		self.description = oItem.description;
+    		self.clickHandler = function() {
+    			var msg = "My name is: " + self.name + " and decription is:" + self.description;
+    			window.alert(msg);
+    		}
+    		self.markAsFavorite = function() {
+    			self.isFavorite(!self.isFavorite());
+    			window.alert(self.isFavorite());
+    		}
+    	};
+
+		function  ViewModel (aFullList) {
+			var self = this;
+
+			self.searchTerm = ko.observable("");
+		    self.items = ko.observableArray(aFullList);
+		    
+		    
+		    self.clickListener = function() {
+		    	if (self.searchTerm() === "") {
+		    		self.items(aFullList)
+		    	} else {
+		    		var aNewList = [];
+		    		for (var i = 0; i < aFullList.length; i++) {
+		    			var oItem = aFullList[i];
+		    			var sSearchTerm = self.searchTerm().toLowerCase();
+		    			var sItemName = oItem.name.toLowerCase();
+		    			if (sItemName.includes(sSearchTerm)) {
+		    				aNewList.push(oItem)
+		    			}
+		    		}
+		    		self.items(aNewList);
+
+		    	}
+		    };
+		};
+
+
+		var aFullList = [
+	    	new ItemViewModel({name: "Apple", description:"Apple Description"}), 
+	    	new ItemViewModel({name: "Grapes", description:"Grapes Description"}),
+	    	new ItemViewModel({name: "Orange", description:"Orange Description"}),
+	    	new ItemViewModel({name: "Grapefruit", description:"Grapefruit Description"}),
+	    	new ItemViewModel({name: "Mango", description:"Mango Description"}),
+	    	new ItemViewModel({name: "Orange Juice", description:"Orange Juice Description"})
+	    ];
+		ko.applyBindings(new ViewModel(aFullList)); // This makes Knockout get to work
+ 
+
+    </script>
+
+</body>
+</html>
