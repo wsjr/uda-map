@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="initial-scale=1.0">
+
+        <title>Map Bart Stations</title>
+
+        <link rel="stylesheet" href="css/style.min.css">
+        <!-- Fontawesome -->
+        <link rel=stylesheet type=text/css href="thirdparty/css/font-awesome-4.6.3/css/font-awesome.min.css">
+
+
+        <!-- JQuery -->
+        <script src="thirdparty/js/jquery/jquery.min.js"></script>
+        <!-- Twitter Bootstrap -->
+        <link rel=stylesheet type=text/css href="thirdparty/css/bootstrap/bootstrap.min.css">
+        <script src="thirdparty/js/bootstrap/bootstrap.min.js"></script>
+
+        <!-- Knockout -->
+        <script src="thirdparty/js/knockout/knockout-3.4.0.js"></script>
+
+        <style>
+          /* Always set the map height explicitly to define the size of the div
+           * element that contains the map. */
+          #map {
+            height: 100%;
+          }
+          /* Optional: Makes the sample page fill the window. */
+          html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+          }
+        </style>
+        
+    </head>
+    <body>
+
+        <!--
+        NOTE: 
+        I got inspiration for showing and hiding of panels from:
+            https://scotch.io/tutorials/off-canvas-menus-with-css3-transitions-and-transforms
+        -->
+
+        <!-- NAV HEADER -->
+        <nav class="navbar navbar-custom">
+          <div class="container-fluid">
+            <p class="navbar-title text-center">Bart Locations</p>
+            <a id="toggle-panel" class="btn btn-primary btn-sm navbar-toggle-panel" href='#' aria-label="Toggle panel" alt="Toggle panel">
+                <i class="fa fa-bars" aria-hidden="true"></i>
+            </a>
+            <a id="toggle-favorites" class="btn btn-primary btn-sm navbar-toggle-fav-button" href='#' aria-label="Toggle favorites"  alt="Toggle favorites">
+                <i class="fa fa-star" aria-hidden="true"></i>
+            </a>
+          </div>
+        </nav>
+
+        <!-- CONTENT -->
+        <div id="site-wrapper">
+            <div id="site-canvas">
+                <!-- MENU -->
+                <div id="site-menu">
+                    <form id="form-container" class="form-container">
+                        <div class="search-container">
+                            <div class="search-area">
+                                <input class="search-box" placeholder="Search station" data-bind='value: searchTerm'/>
+                            </div>
+                            <div class="button-area">
+                                <a class="btn btn-primary btn-sm btn-min-corners" href="#navigation-main" data-bind='click: filterButtonListener'>
+                                    <i class="fa fa-filter" aria-hidden="true">&nbsp;Filter</i>
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="station-list">
+                        <div data-bind="foreach: items">
+                            <div class="station-item">
+                                <div class="station-name-container" data-bind="click: clickHandler">
+                                    <span class="station-name" data-bind="text: name">
+                                    </span>
+                                </div>
+                                <div class="favorite-container">
+                                    <i class="fa fa-star" data-bind="style: {color: isFavorite() ? 'yellow' : '#CCCCCC'}, click: markAsFavorite">
+                                    </i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- MAP -->
+                <div id="map">
+                    Map goes here ...
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript" src="js/map.min.js">
+        </script>
+
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDZ-sY-4sRllJs6AF_467soV1gpGztKs6U&callback=initMap"
+        async defer>
+        </script>
+
+    </body>
+</html>
