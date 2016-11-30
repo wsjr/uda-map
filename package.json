@@ -1,0 +1,9 @@
+{
+  "name": "map",
+  "version": "1.0.0",
+  "description": "Neighborhood Map",
+  "devDependencies": {
+    "grunt-contrib-cssmin": "^1.0.2",
+    "grunt-contrib-uglify": "^2.0.0"
+  }
+}

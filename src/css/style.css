@@ -1,54 +1,45 @@
 * {box-sizing:border-box;}
 body {background-color: #CCC;}
 
-.bgimg {
-    position:fixed;
-    top: 0;
-    left: 0;
-    width:100%;
-    z-index:-1;
-    opacity:1;
+.panel-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
 }
-
-.greeting {
-    color:black;
-    text-shadow: 1px 1px 3px rgba(255,255,255, .5);
-    text-align: center;
-}
-
-.wikipedia-container {
-    float:right;
-    width:290px;
-    padding:10px;
-    margin-right: 10px;
-    background-color: rgba(255,255,255,0.7);
-}
-
-.nytimes-container {
-    padding: 10px;
-    margin-right:300px;
-    background-color: rgba(255,255,255,0.7);
-}
-
-.article-list {
-    margin: 0;
-    padding: 0;
-}
-
-.article {
-    list-style-type: none;
-    padding:10px;
-    border-top: 1px solid #CCC;
-}
-.article:first-child {
-    border-top:none;
-}
-
-
 
 .left-panel {
+    display: flex;
+    flex-direction: column;
     background-color: black;
-    height: 100vh;
+    width: 340px;
+}
+
+.right-panel {
+    display: flex;
+    flex-direction: column;
+    width: calc(100vw - 340px);
+}
+
+.left-panel-width {
+    width: 340px;
+}
+
+.search-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.search-area {
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - 60px);
+}
+
+.button-area {
+    display: flex;
+    flex-direction: column;
+    width: 60px;
 }
 
 .left-title-row {
@@ -61,12 +52,43 @@ body {background-color: #CCC;}
     padding: 5px;
 }
 
-.btn-min-corners {
-    border-radius: 2px !important
+.search-box {
+    height: 29px;
+    width: 210px;
+    padding: 0px 10px;
 }
 
-.location-box {
-    padding: 2.9px;
+.btn-min-corners {
+    border-radius: 0px !important
+}
+
+.station-list {
+    height: calc(100vh - 110px);
+    max-height: calc(100vh - 95px);
+    overflow-y: auto;
+    padding: 10px 0px;
+}
+
+.station-list::-webkit-scrollbar * {
+    background:transparent;
+}
+
+.station-name-container,
+.favorite-container {
+    display: inline-block;
+}
+
+.station-name-container:hover,
+.favorite-container:hover {
+    cursor: pointer;
+}
+
+.station-name {
+    color: #cccccc;
+}
+
+.station-item {
+    padding: 10px 10px;
 }
 
 .right-nav-row {
@@ -83,4 +105,113 @@ body {background-color: #CCC;}
 
 .right-map-container {
     height: calc(100vh - 45px) !important;
+    padding: 0px !important;
 }
+
+#map {
+    width: 100%;
+}
+
+.venues-table {
+    width: 100%;
+    padding: 5px;
+}
+
+.venues-table td {
+    padding: 3px;
+}
+
+.station-title {
+    font-size: 20px;
+    font-weight: bold;
+} 
+
+.rec-venue-header {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.venues-title {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/*.row-no-padding {
+   padding: 0 !important;
+   margin: 0 !important;
+}*/
+
+.navbar-custom {
+    background-color: #333;
+    border-color: black;
+    border-radius: 0px !important;
+}
+
+.nav-container {
+    background-color: black;
+}
+
+.navbar-title {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    color: white;
+    font-size: 20px;
+}
+
+.navbar-toggle-panel {
+    position: absolute;
+    left: 10px;
+    top: 15px;
+} 
+
+.navbar-toggle-fav-button {
+    position: absolute;
+    top: 15px;
+    left: 48px;
+} 
+
+.navbar-toggle-fav-button.show-favs {
+    color: yellow !important;
+}
+
+
+.title-container {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+
+#site-wrapper {
+    margin-top: -20px;
+
+    position: relative;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+}
+
+#site-canvas {
+    width: 100%;
+    height: calc(100vh - 58px);
+    position: relative;
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
+    -webkit-transition: .3s ease all;
+    transition: .3s ease all;
+}
+
+#site-menu {
+  width: 300px;
+  height: calc(100vh - 58px);
+  position: absolute;
+  top: 0;
+  left: -300px;
+  background: black;
+  padding: 15px;
+}
+
+#site-wrapper.show-nav #site-canvas {
+  -webkit-transform: translateX(300px);
+  transform: translateX(300px);
+}
+
