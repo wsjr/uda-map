@@ -1,6 +1,6 @@
 Neighborhood Map
 =============
-The neighborhood map project uses Google Map to map all the bart stations via Bart API and shows **Top 5** recommended venues for each station by users within 1000 meters using Foursquare API. 
+The neighborhood map project plots all Bart stations. For each Bart station, information is diplayed and **Top 5** recommended venues nearby are suggested to the user.
 
 The following technologies were used in building this project:
 >  - Knockout
