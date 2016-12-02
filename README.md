@@ -3,18 +3,18 @@ Neighborhood Map
 The neighborhood map project uses Google Map to map all the bart stations via Bart API and shows **Top 5** recommended venues for each station by users within 1000 meters using Foursquare API. 
 
 The following technologies were used in building this project:
- 
- - Knockout
- - Jquery (AJAX)
- - HTML5 LocalStorage
- - Twitter Bootstrap
- - FontAwesome
- - Grunt (minifying js/css and running jshint)
+>  - Knockout
+>  - Jquery (AJAX)
+>  - HTML5 LocalStorage
+>  - Twitter Bootstrap
+>  - FontAwesome
+>  - Grunt (minifying js/css and running jshint)
 
- Also the following APIs were used to build the app:
- - Foursquare API to power venue recommendations
- - Bart API for Bart station informations
- - Google API to display map and markers
+Moreover, below are the APIs used in this project:
+ 
+> - Foursquare API to power venue recommendations
+> - Bart API for Bart station informations
+> - Google API to display map and markers
 
 How to Use?
 ==============
