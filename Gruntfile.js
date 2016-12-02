@@ -22,15 +22,23 @@ module.exports = function(grunt) {
           ext: '.min.css'
         }]
       }
-    }
+    },
+    jshint: {
+      files: ['Gruntfile.js', 'src/js/map.js'],
+      options: {
+        globals: {
+          jQuery: true
+        }
+      }
+    },
   });
 
-  // Load the plugin that provides the "uglify" task.
+  // Load the plugins.
+  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-uglify');
-
   grunt.loadNpmTasks('grunt-contrib-cssmin');
 
   // Default task(s).
-  grunt.registerTask('default', ['uglify','cssmin']);
+  grunt.registerTask('default', ['jshint', 'uglify','cssmin']);
 
 };

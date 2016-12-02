@@ -6,19 +6,19 @@
 
         <title>Map Bart Stations</title>
 
-        <link rel="stylesheet" href="css/style.min.css">
+        <link rel="stylesheet" href="css/style.css">
         <!-- Fontawesome -->
-        <link rel=stylesheet type=text/css href="css/font-awesome-4.6.3/css/font-awesome.min.css">
+        <link rel=stylesheet type=text/css href="thirdparty/css/font-awesome-4.6.3/css/font-awesome.min.css">
 
 
         <!-- JQuery -->
-        <script src="js/jquery/jquery.min.js"></script>
+        <script src="thirdparty/js/jquery/jquery.min.js"></script>
         <!-- Twitter Bootstrap -->
-        <link rel=stylesheet type=text/css href="css/bootstrap/bootstrap.min.css">
-        <script src="js/bootstrap/bootstrap.min.js"></script>
+        <link rel=stylesheet type=text/css href="thirdparty/css/bootstrap/bootstrap.min.css">
+        <script src="thirdparty/js/bootstrap/bootstrap.min.js"></script>
 
         <!-- Knockout -->
-        <script src="js/knockout/knockout-3.4.0.js"></script>
+        <script src="thirdparty/js/knockout/knockout-3.4.0.js"></script>
 
         <style>
           /* Always set the map height explicitly to define the size of the div
@@ -44,31 +44,41 @@
         -->
 
         <!-- NAV HEADER -->
-        <nav class="navbar navbar-custom">
+        <nav id="navbar" class="navbar navbar-custom">
           <div class="container-fluid">
             <p class="navbar-title text-center">Bart Locations</p>
-            <a id="toggle-panel" class="btn btn-primary btn-sm navbar-toggle-panel" href='#' aria-label="Toggle panel" alt="Toggle panel">
+            <a id="toggle-panel" 
+                class="btn btn-primary btn-sm navbar-toggle-panel" 
+                href='#' 
+                aria-label="Toggle panel" 
+                alt="Toggle panel" 
+                data-bind="click: togglePanelHandler">
                 <i class="fa fa-bars" aria-hidden="true"></i>
             </a>
-            <a id="toggle-favorites" class="btn btn-primary btn-sm navbar-toggle-fav-button" href='#' aria-label="Toggle favorites"  alt="Toggle favorites">
+            <a id="toggle-favorites" 
+                class="btn btn-primary btn-sm navbar-toggle-fav-button" 
+                href='#' 
+                aria-label="Toggle favorites"  
+                alt="Toggle favorites" 
+                data-bind="css: { 'show-favs': showFavsOnly() == true }, click: toggleFavHandler">
                 <i class="fa fa-star" aria-hidden="true"></i>
             </a>
           </div>
         </nav>
 
         <!-- CONTENT -->
-        <div id="site-wrapper">
+        <div id="site-wrapper" data-bind="css: { 'show-nav': isPanelOpen() == true }">
             <div id="site-canvas">
                 <!-- MENU -->
                 <div id="site-menu">
                     <form id="form-container" class="form-container">
                         <div class="search-container">
                             <div class="search-area">
-                                <input class="search-box" placeholder="Search station" data-bind='value: searchTerm'/>
+                                <input class="search-box" placeholder="Search station" data-bind="value: searchTerm, valueUpdate: 'keyup'" autocomplete="off"/>
                             </div>
                             <div class="button-area">
-                                <a class="btn btn-primary btn-sm btn-min-corners" href="#navigation-main" data-bind='click: filterButtonListener'>
-                                    <i class="fa fa-filter" aria-hidden="true">&nbsp;Filter</i>
+                                <a class="btn btn-primary btn-sm btn-min-corners" href="#navigation-main" data-bind='click: clearButtonListener'>
+                                    <i class="fa fa-times" aria-hidden="true">&nbsp;Clear</i>
                                 </a>
                             </div>
                         </div>
@@ -100,7 +110,7 @@
         </script>
 
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDZ-sY-4sRllJs6AF_467soV1gpGztKs6U&callback=initMap"
-        async defer>
+        async defer onerror="mapErrorHandler()">
         </script>
 
     </body>

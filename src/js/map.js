@@ -1,31 +1,42 @@
 
 // Bart info
-var BART_URL = "http://api.bart.gov/api/stn.aspx?cmd=stns&";
-var BART_KEY = "ZI4M-5RS8-9TDT-DWE9";
+var BART_URL = 'http://api.bart.gov/api/stn.aspx?cmd=stns&';
+var BART_KEY = 'ZI4M-5RS8-9TDT-DWE9';
 
 // Foursquare info
-var FS_URL = "https://api.foursquare.com/v2/venues/explore?"
-var FS_CLIENT_ID = "RL4AI1OIKF5CVKPU12OWLL5YWSJ3SSIYZWP4FK2OQZKW0WRF";
-var FS_CLIENT_SECRET = "EY4KIAQLBVI0QSZCIZCP35YREJ5WWWPR553EIQOMPF4ZZRSK";
+var FS_URL = 'https://api.foursquare.com/v2/venues/explore?';
+var FS_CLIENT_ID = 'RL4AI1OIKF5CVKPU12OWLL5YWSJ3SSIYZWP4FK2OQZKW0WRF';
+var FS_CLIENT_SECRET = 'EY4KIAQLBVI0QSZCIZCP35YREJ5WWWPR553EIQOMPF4ZZRSK';
 var FS_LIMIT = 5;
-var FS_VERSION = "20161101";
+var FS_VERSION = '20161101';
 
 
-var YELLOW_MARKER = "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
-var GREEN_MARKER = "http://maps.google.com/mapfiles/ms/icons/green-dot.png";
+var YELLOW_MARKER = 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png';
+var GREEN_MARKER = 'http://maps.google.com/mapfiles/ms/icons/green-dot.png';
 var DELAY_DROP_MS = 75;
-var SHOW_ALL = "SHOW ALL";
-var SHOW_FAVS_ONLY = "SHOW FAVS ONLY";
+var SHOW_ALL = 'SHOW ALL';
+var SHOW_FAVS_ONLY = 'SHOW FAVS ONLY';
+var MARKER_BOUNCE_COUNT = 3;
+var MARKER_ANIMATION_IN_MS = MARKER_BOUNCE_COUNT * 700;
 
 var map;
 var markers = [];
-var oRefStationListVM = null;
+var oRefMapVM = null;
+var oInfoWindow = null;
 
 
 // Ensure the local storage variables are initialized correctly.
-localStorage.searchTerm = localStorage.searchTerm || "";
-localStorage.favorites = localStorage.favorites || "";
+localStorage.searchTerm = localStorage.searchTerm || '';
+localStorage.favorites = localStorage.favorites || '';
 localStorage.showMode = localStorage.showMode || SHOW_ALL;
+
+/**
+ *
+ * Method called when the google map fails to load.
+ */
+function mapErrorHandler() {
+    window.alert("Error encountered loading Google Map! Please check code!");
+}
 
 /**
  *
@@ -39,8 +50,10 @@ function initMap() {
         zoom: 10
     });
 
+    oInfoWindow = new google.maps.InfoWindow();
+
     loadStations();
-};
+}
 
 /**
  *
@@ -49,7 +62,7 @@ function initMap() {
  */
 function compareStrings(sKey, sSubKey) {
     return sKey.toLowerCase().includes(sSubKey.toLowerCase());
-};
+}
 
 /**
  *
@@ -57,52 +70,54 @@ function compareStrings(sKey, sSubKey) {
  *
  */ 
 function generateHtmlContent(oItem, aVenues) {
-    var htmlContent = "<span class='station-title'>" + oItem.name + " Station</span><BR>";
-    htmlContent += oItem.address + "<BR>";
-    htmlContent += oItem.city + ", " + oItem.state + " " + oItem.zip + "<BR><BR>";
-    htmlContent += "<span class='rec-venue-header'>Top 5 Recommended Places (within 1000 meters):</span><BR>";
+    var htmlContent = '<span class="station-title">' + oItem.name + ' Station</span><BR>';
+    htmlContent += oItem.address + '<BR>';
+    htmlContent += oItem.city + ', ' + oItem.state + ' ' + oItem.zip + '<BR><BR>';
+    htmlContent += '<div class="rec-banner">API powered by Foursquare</div><BR>';
+    htmlContent += '<span class="rec-venue-header">Top 5 Recommended Places (within 1000 meters):</span><BR>';
     var nVenues = aVenues.length;
     if (nVenues === 0) {
-        htmlContent += "Still loading ...";
+        htmlContent += 'Still loading ...';
     } else {
-        htmlContent += "<table class='venues-table'>";
+
+        htmlContent += '<table class="venues-table">';
         for (var i = 0; i < nVenues; i++) {
             var oVenue = aVenues[i];
 
-            htmlContent += "<tr>";
-            htmlContent += "<td colspan='3' class='venues-title'>" + oVenue.name + "</td>";
-            htmlContent += "</tr>";
+            htmlContent += '<tr>';
+            htmlContent += '<td colspan="3" class="venues-title">' + oVenue.name + '</td>';
+            htmlContent += '</tr>';
 
-            htmlContent += "<tr>";
-            htmlContent += "<td>";
+            htmlContent += '<tr>';
+            htmlContent += '<td>';
             if (oVenue.address !== undefined) {
                 htmlContent += oVenue.address;
             } else {
-                htmlContent += "<i>No address available</i>";
+                htmlContent += '<i>No address available</i>';
             }
-            htmlContent += "</td>"
+            htmlContent += '</td>';
             
-            htmlContent += "<td>";
+            htmlContent += '<td>';
             if (oVenue.phone !== undefined) {
                 htmlContent += oVenue.phone;
             } else {
-                htmlContent += "<i>No phone available</i>";
+                htmlContent += '<i>No phone available</i>';
             }
-            htmlContent += "</td>";
+            htmlContent += '</td>';
             
-            htmlContent += "<td>";
+            htmlContent += '<td>';
             if (oVenue.url !== undefined) {
-                htmlContent += "<a href='" + oVenue.url + "' target='_blank'>website</a>";
+                htmlContent += '<a href="' + oVenue.url + '" target="_blank">website</a>';
             } else {
-                htmlContent += "<i>No website available</i>";
+                htmlContent += '<i>No website available</i>';
             }
-            htmlContent += "</td>";
-            htmlContent += "</tr>";
+            htmlContent += '</td>';
+            htmlContent += '</tr>';
         }
-        htmlContent += "</table>";
+        htmlContent += '</table>';
     }
     return htmlContent;
-};
+}
 
 /**
  *
@@ -110,28 +125,28 @@ function generateHtmlContent(oItem, aVenues) {
  *
  */
 function loadStations() {    
-    var bartURL = BART_URL + "&key=" + BART_KEY;
+    var bartURL = BART_URL + '&key=' + BART_KEY;
     
 
     var aStationList = [];
     $.ajax({
         url: bartURL,
-        dataType: "xml",
+        dataType: 'xml',
         success: function (response) {
-            var station = $(response).find("station");
+            var station = $(response).find('station');
             var stationIndex = 0;
 
             // Process each bart station
             $(station).each(function () {
                 var oStation = {};
-                oStation.name = $(this).find("name").text();
-                oStation.lat = $(this).find("gtfs_latitude").text();
-                oStation.long = $(this).find("gtfs_longitude").text();
-                oStation.address = $(this).find("address").text();
-                oStation.city = $(this).find("city").text();
-                oStation.county = $(this).find("county").text(); 
-                oStation.state = $(this).find("state").text(); 
-                oStation.zip = $(this).find("zipcode").text();
+                oStation.name = $(this).find('name').text();
+                oStation.lat = $(this).find('gtfs_latitude').text();
+                oStation.long = $(this).find('gtfs_longitude').text();
+                oStation.address = $(this).find('address').text();
+                oStation.city = $(this).find('city').text();
+                oStation.county = $(this).find('county').text(); 
+                oStation.state = $(this).find('state').text(); 
+                oStation.zip = $(this).find('zipcode').text();
                 oStation.index = stationIndex++;
 
                 var oStationItem = new StationItemViewModel(oStation); 
@@ -139,13 +154,13 @@ function loadStations() {
 
                 // Get more info from foursquare for each bart station
                 var fsURL = FS_URL;
-                fsURL += "ll=" + oStation.lat + "," + oStation.long;
-                fsURL += "&limit=" + FS_LIMIT;
-                fsURL += "&radius=1000";
-                fsURL += "&section=topPicks";
-                fsURL += "&client_id=" + FS_CLIENT_ID;
-                fsURL += "&client_secret=" + FS_CLIENT_SECRET;
-                fsURL += "&v=" + FS_VERSION;
+                fsURL += 'll=' + oStation.lat + ',' + oStation.long;
+                fsURL += '&limit=' + FS_LIMIT;
+                fsURL += '&radius=1000';
+                fsURL += '&section=topPicks';
+                fsURL += '&client_id=' + FS_CLIENT_ID;
+                fsURL += '&client_secret=' + FS_CLIENT_SECRET;
+                fsURL += '&v=' + FS_VERSION;
                 
                 $.ajax({
                     url: fsURL,
@@ -168,36 +183,36 @@ function loadStations() {
                         oStationItem.recVenues(nVenues);
 
                         // Check if station item has been tagged as favorite.
-                        var sKey = "#" + oStationItem.name;
+                        var sKey = '#' + oStationItem.name;
                         var sFavorites = localStorage.favorites;
                         if (compareStrings(sFavorites, sKey)) {
                             oStationItem.markAsFavorite();
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.log("Error encountered fetching data for each station:" + xhr.status);
+                        window.alert('Error encountered fetching data for ' + oStation.name  + ' station. Status code is:' + xhr.status);
                     }
                 });
             });
         },
         complete: function() {
-            var oStationListVM = new StationListViewModel(aStationList);
+            var oMapVM = new MapViewModel(aStationList);
             // Save a reference to oStationListVM
-            oRefStationListVM = oStationListVM;
+            oRefMapVM = oMapVM;
 
-            ko.applyBindings(oStationListVM);
+            ko.applyBindings(oMapVM);
 
             // Update search value in the search bar if there's any saved values in the localStorage.
-            if (localStorage.searchTerm !== "") {
-                 oStationListVM.searchTerm(localStorage.searchTerm);
+            if (localStorage.searchTerm !== '') {
+                 oMapVM.searchTerm(localStorage.searchTerm);
             }
             
         },
         error: function(xhr, status, error) {
-            console.log("Error encountered fetching stations:" + xhr.status);
+            window.alert('Error encountered fetching stations. Status code:' + xhr.status);
         }
     });
-};
+}
 
 /**
  *
@@ -223,6 +238,14 @@ function StationItemViewModel (oItem) {
         self.marker().htmlContent = htmlContent;
     });
 
+    self.hideMarker = function () {
+        self.marker().setVisible(false);
+    };
+
+    self.showMarker = function () {
+        self.marker().setVisible(true);
+    };
+
     self.marker = ko.computed(function() {
         // Create marker
         var oPosition = {lat: parseFloat(self.lat), lng: parseFloat(self.long)};
@@ -234,16 +257,20 @@ function StationItemViewModel (oItem) {
             htmlContent: htmlContent
         });
 
-        var oInfowindow = new google.maps.InfoWindow();
         marker.addListener('click', function() {
-            oInfowindow.setContent(marker.htmlContent);
-            oInfowindow.open(map, marker);
+            oInfoWindow.setContent(marker.htmlContent);
+            oInfoWindow.open(map, marker);
+            self.changeColorAndBounceMarker();
         });
+        marker.setMap(map);
+        marker.setVisible(false);
 
         if (compareStrings(self.name, localStorage.searchTerm)) {
-            setTimeout(function() {marker.setMap(map)}, self.index * DELAY_DROP_MS);
+            setTimeout(function() {
+                marker.setVisible(true);
+            }, self.index * DELAY_DROP_MS);
         } else {
-            marker.setMap(null);
+            marker.setVisible(false);
         }
         
         return marker;
@@ -251,13 +278,13 @@ function StationItemViewModel (oItem) {
 
     self.markAsFavorite = function() {
         self.isFavorite(!self.isFavorite());
-        var sKey = "#" + self.name;
+        var sKey = '#' + self.name;
         var sFavorites = localStorage.favorites;
 
         // Not Favorite -> Favorite
         if (self.isFavorite()) {
             // Ensure that a marker is drawn.
-            self.marker().setMap(map);
+            self.showMarker();
             // Change marker to yellow.
             self.marker().setIcon(YELLOW_MARKER);
 
@@ -275,7 +302,7 @@ function StationItemViewModel (oItem) {
             // Otherwise, change icon to red but don't draw marker.
             } else {
                 self.marker().setIcon(null);
-                self.removeMarker();
+                self.hideMarker();
             }
             
             // Remove name from favorites.
@@ -284,22 +311,15 @@ function StationItemViewModel (oItem) {
         }
     };
 
-    self.setMap = function (oMap) {
-        self.marker().setMap(oMap);
-    }
-
-    self.removeMarker = function () {
-        self.setMap(null);
-    }
-
-    self.addMarker = function () {
-        self.setMap(map);
-    }
-
     /**
      * Click listener attached to station item.
      */
     self.clickHandler = function() {
+        // programatically open the content window
+        google.maps.event.trigger(self.marker(), 'click');
+    };
+
+    self.changeColorAndBounceMarker = function() {
         self.marker().setIcon(GREEN_MARKER);
         self.marker().setAnimation(google.maps.Animation.BOUNCE);
         setTimeout(function(){ 
@@ -310,70 +330,85 @@ function StationItemViewModel (oItem) {
             }
             self.marker().setAnimation(null); 
         }, 
-        4000);
+        MARKER_ANIMATION_IN_MS);
     };
-};
+}
 
 /**
  *
- * View Model used for Station List and Search Term
+ * View Model used for Map View Project
  *
  */
-function  StationListViewModel (aFullList) {
+function  MapViewModel (aFullList) {
     var self = this;
 
-    self.searchTerm = ko.observable("");
+    self.isPanelOpen = ko.observable(false);
+    self.showFavsOnly = ko.observable(false);
+
+    self.searchTerm = ko.observable('');
     self.items = ko.observableArray(aFullList);
     
     self._fulllist = aFullList;
-    self._previtems = self.items()
+    self._previtems = self.items();
+
+
+    self.togglePanelHandler = function () {
+        self.isPanelOpen(!self.isPanelOpen());
+
+        // Update the size of the google map
+        google.maps.event.trigger(map, 'resize');
+    };
+
+    self.toggleFavHandler = function () {
+        self.showFavsOnly(!self.showFavsOnly());
+        
+        if (self.showFavsOnly()) {
+            // Save state
+            localStorage.showMode = SHOW_FAVS_ONLY;
+        } else {
+            // Save state
+            localStorage.showMode = SHOW_ALL;
+        }
+
+        if (oRefMapVM !== null) {
+            oRefMapVM.showMarkers(localStorage.showMode === SHOW_FAVS_ONLY);
+        }
+    };
 
     self.items.subscribe(function (newValue) {
         // Remove marker for current displayed stations
         var nCount = self._previtems.length;
+        var oItem;
         for (var i = 0; i < nCount; i++) {
-            var oItem = self._previtems[i];
-            oItem.removeMarker();
+            oItem = self._previtems[i];
+            oItem.hideMarker();
         }
         
         // Add marker for searched stations
         nCount = newValue.length;
         for (i = 0; i < nCount; i++) {
             oItem = newValue[i];
-            oItem.addMarker();
+            oItem.showMarker();
         }
 
         self._previtems = newValue;
     });
 
     self.searchTerm.subscribe(function (newValue) {
+        localStorage.searchTerm = self.searchTerm();
+
         var aNewList = [];
         for (var i = 0; i < self._fulllist.length; i++) {
             var oItem = aFullList[i];
             if (compareStrings(oItem.name, self.searchTerm())) {
-                aNewList.push(oItem)
+                aNewList.push(oItem);
             }
         }
         self.items(aNewList);
     });
 
-    /**
-     * Listener attached to the "Filter" button.
-     */
-    self.filterButtonListener = function() {
-        localStorage.searchTerm = self.searchTerm();
-        if (self.searchTerm() === "") {
-            self.items(self._fulllist)
-        } else {
-            var aNewList = [];
-            for (var i = 0; i < self._fulllist.length; i++) {
-                var oItem = aFullList[i];
-                if (compareStrings(oItem.name, self.searchTerm())) {
-                    aNewList.push(oItem)
-                }
-            }
-            self.items(aNewList);
-        }
+    self.clearButtonListener = function () {
+        self.searchTerm("");
     };
 
     self.showMarkers = function(bFavoritesOnly) {
@@ -384,65 +419,11 @@ function  StationListViewModel (aFullList) {
                 // Do nothing
             } else {
                 if (bFavoritesOnly) {
-                    oItem.removeMarker();
+                    oItem.hideMarker();
                 } else {
-                    oItem.addMarker();
+                    oItem.showMarker();
                 }
             }
         }
     };
-};
-
-/**
- *
- * Handler used for toggling the panel.
- *
- */
-function toggleHandler() {
-    var $siteWrapper = $('#site-wrapper');
-
-    if ($siteWrapper.hasClass('show-nav')) {
-      // Do things on Nav Close
-      $siteWrapper.removeClass('show-nav');
-    } else {
-      // Do things on Nav Open
-      $siteWrapper.addClass('show-nav');
-    }
-    // Update the size of the google map
-    google.maps.event.trigger(map, 'resize')
-};
-
-/**
- *
- * Handler used for toggling the display of favorites.
- *
- */
-function toggleFavHandler() {
-    var $favButton = $('#toggle-favorites');
-
-    if ($favButton.hasClass('show-favs')) {
-      // Show all markers
-      $favButton.removeClass('show-favs');
-      // Save state
-      localStorage.showMode = SHOW_ALL;
-    } else {
-      // Show only favorites
-      $favButton.addClass('show-favs');
-      // Save state
-      localStorage.showMode = SHOW_FAVS_ONLY;
-    }
-
-    oRefStationListVM.showMarkers(localStorage.showMode === SHOW_FAVS_ONLY);
-};
-
-/**
- *
- * Method used to attach handlers to buttons.
- *
- */
-function attachClickHandler() {
-    $("#toggle-panel").on("click", toggleHandler);
-    $("#toggle-favorites").on("click", toggleFavHandler)
-};
-
-attachClickHandler();
+}
